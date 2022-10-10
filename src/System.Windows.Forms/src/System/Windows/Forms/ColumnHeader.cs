@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Design;
 using static Interop;
-using static Interop.ComCtl32;
 
 namespace System.Windows.Forms
 {
@@ -223,7 +222,7 @@ namespace System.Windows.Forms
 
                 if (ListView is not null && ListView.IsHandleCreated)
                 {
-                    ListView.SetColumnInfo(LVCF.IMAGE, this);
+                    ListView.SetColumnInfo(LVCOLUMNW_MASK.LVCF_IMAGE, this);
                 }
             }
         }
@@ -260,7 +259,7 @@ namespace System.Windows.Forms
 
                 if (ListView is not null && ListView.IsHandleCreated)
                 {
-                    ListView.SetColumnInfo(LVCF.IMAGE, this);
+                    ListView.SetColumnInfo(LVCOLUMNW_MASK.LVCF_IMAGE, this);
                 }
             }
         }
@@ -325,7 +324,7 @@ namespace System.Windows.Forms
 
                 if (ListView is not null)
                 {
-                    ListView.SetColumnInfo(LVCF.TEXT, this);
+                    ListView.SetColumnInfo(LVCOLUMNW_MASK.LVCF_TEXT, this);
                 }
             }
         }
@@ -368,7 +367,7 @@ namespace System.Windows.Forms
 
                 if (ListView is not null)
                 {
-                    ListView.SetColumnInfo(LVCF.FMT, this);
+                    ListView.SetColumnInfo(LVCOLUMNW_MASK.LVCF_FMT, this);
                     ListView.Invalidate();
                 }
             }
@@ -407,13 +406,13 @@ namespace System.Windows.Forms
                 if (ListView is not null && ListView.IsHandleCreated && !ListView.Disposing && ListView.View == View.Details)
                 {
                     // Make sure this column has already been added to the ListView, else just return width
-                    HWND hwndHdr = (HWND)PInvoke.SendMessage(ListView, (User32.WM)LVM.GETHEADER);
+                    HWND hwndHdr = (HWND)PInvoke.SendMessage(ListView, (User32.WM)PInvoke.LVM_GETHEADER);
                     if (!hwndHdr.IsNull)
                     {
-                        int nativeColumnCount = (int)PInvoke.SendMessage(hwndHdr, (User32.WM)HDM.GETITEMCOUNT);
+                        int nativeColumnCount = (int)PInvoke.SendMessage(hwndHdr, (User32.WM)PInvoke.HDM_GETITEMCOUNT);
                         if (Index < nativeColumnCount)
                         {
-                            _width = (int)PInvoke.SendMessage(ListView, (User32.WM)LVM.GETCOLUMNWIDTH, (WPARAM)Index);
+                            _width = (int)PInvoke.SendMessage(ListView, (User32.WM)PInvoke.LVM_GETCOLUMNWIDTH, (WPARAM)Index);
                         }
                     }
                 }
@@ -504,7 +503,7 @@ namespace System.Windows.Forms
             {
                 fixed (int* pCols = cols)
                 {
-                    PInvoke.SendMessage(ListView, (User32.WM)LVM.SETCOLUMNORDERARRAY, (WPARAM)cols.Length, (LPARAM)pCols);
+                    PInvoke.SendMessage(ListView, (User32.WM)PInvoke.LVM_SETCOLUMNORDERARRAY, (WPARAM)cols.Length, (LPARAM)pCols);
                 }
             }
         }

@@ -6,6 +6,6 @@ namespace Windows.Win32
 {
     internal static partial class PInvoke
     {
-        public const int MAX_PATH = 260;
+        public const uint TBM_GETPOS = (uint)Interop.User32.WM.USER;
     }
 }
