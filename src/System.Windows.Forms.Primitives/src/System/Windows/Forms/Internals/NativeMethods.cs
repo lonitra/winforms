@@ -94,34 +94,6 @@ namespace System.Windows.Forms
             public Comdlg32.PD_RESULT dwResultAction;
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        public class OPENFILENAME_I
-        {
-            public int lStructSize = Marshal.SizeOf<OPENFILENAME_I>(); //ndirect.DllLib.sizeOf(this);
-            public IntPtr hwndOwner;
-            public IntPtr hInstance;
-            public string? lpstrFilter;   // use embedded nulls to separate filters
-            public IntPtr lpstrCustomFilter = IntPtr.Zero;
-            public int nMaxCustFilter;
-            public int nFilterIndex;
-            public IntPtr lpstrFile;
-            public int nMaxFile = PInvoke.MAX_PATH;
-            public IntPtr lpstrFileTitle = IntPtr.Zero;
-            public int nMaxFileTitle = PInvoke.MAX_PATH;
-            public string? lpstrInitialDir;
-            public string? lpstrTitle;
-            public int Flags;
-            public short nFileOffset;
-            public short nFileExtension;
-            public string? lpstrDefExt;
-            public IntPtr lCustData = IntPtr.Zero;
-            public WndProc? lpfnHook;
-            public string? lpTemplateName;
-            public IntPtr pvReserved = IntPtr.Zero;
-            public int dwReserved;
-            public int FlagsEx;
-        }
-
         public static class ActiveX
         {
             public const int ALIGN_MIN = 0x0;

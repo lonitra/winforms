@@ -20,36 +20,36 @@ internal static partial class Interop
         {
             [PreserveSig]
             HRESULT OnFileOk(
-                IFileDialog pfd);
+                IFileDialog* pfd);
 
             [PreserveSig]
             HRESULT OnFolderChanging(
-                IFileDialog pfd,
-                IShellItem psiFolder);
+                IFileDialog* pfd,
+                IShellItem* psiFolder);
 
             [PreserveSig]
             HRESULT OnFolderChange(
-                IFileDialog pfd);
+                IFileDialog* pfd);
 
             [PreserveSig]
             HRESULT OnSelectionChange(
-                IFileDialog pfd);
+                IFileDialog* pfd);
 
             [PreserveSig]
             HRESULT OnShareViolation(
-                IFileDialog pfd,
-                IShellItem psi,
-                FDESVR* pResponse);
+                IFileDialog* pfd,
+                IShellItem* psi,
+                FDE_SHAREVIOLATION_RESPONSE* pResponse);
 
             [PreserveSig]
             HRESULT OnTypeChange(
-                IFileDialog pfd);
+                IFileDialog* pfd);
 
             [PreserveSig]
             HRESULT OnOverwrite(
-                IFileDialog pfd,
-                IShellItem psi,
-                FDEOR* pResponse);
+                IFileDialog* pfd,
+                IShellItem* psi,
+                FDE_OVERWRITE_RESPONSE* pResponse);
         }
     }
 }

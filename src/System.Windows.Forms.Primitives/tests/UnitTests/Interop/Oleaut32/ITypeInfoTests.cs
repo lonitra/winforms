@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms.Primitives.Tests.Interop.Mocks;
 using Xunit;
-using static Interop;
 using static Interop.Ole32;
 using static Interop.Oleaut32;
 
@@ -92,8 +91,8 @@ namespace System.Windows.Forms.Primitives.Tests.Interop.Oleaut32
             ushort wOrdinal = ushort.MaxValue;
             hr = typeInfo.GetDllEntry((DispatchID)6, INVOKEKIND.FUNC, &dllName, &name, &wOrdinal);
             Assert.Equal(HRESULT.TYPE_E_BADMODULEKIND, hr);
-            Assert.Empty(dllName.String.ToString());
-            Assert.Empty(name.String.ToString());
+            Assert.Empty(dllName.ToString());
+            Assert.Empty(name.ToString());
             Assert.Equal(0u, wOrdinal);
         }
 
@@ -114,10 +113,10 @@ namespace System.Windows.Forms.Primitives.Tests.Interop.Oleaut32
             using var helpFile = new BSTR("HelpFile");
             hr = typeInfo.GetDocumentation((DispatchID)4, &name, &docString, &dwHelpContext, &helpFile);
             Assert.Equal(HRESULT.S_OK, hr);
-            Assert.Equal("Width", name.String.ToString());
-            Assert.Empty(docString.String.ToString());
+            Assert.Equal("Width", name.ToString());
+            Assert.Empty(docString.ToString());
             Assert.Equal(0u, dwHelpContext);
-            Assert.Empty(helpFile.String.ToString());
+            Assert.Empty(helpFile.ToString());
         }
 
         [StaFact]
@@ -210,7 +209,7 @@ namespace System.Windows.Forms.Primitives.Tests.Interop.Oleaut32
             var mops = new BSTR("Mops");
             hr = typeInfo.GetMops((DispatchID)4, &mops);
             Assert.Equal(HRESULT.S_OK, hr);
-            Assert.Empty(mops.String.ToString());
+            Assert.Empty(mops.ToString());
         }
 
         [StaFact]
@@ -230,8 +229,8 @@ namespace System.Windows.Forms.Primitives.Tests.Interop.Oleaut32
             uint cNames = 0;
             hr = typeInfo.GetNames((DispatchID)4, rgszNames, 2u, &cNames);
             Assert.Equal(HRESULT.S_OK, hr);
-            Assert.Equal("Width", rgszNames[0].String.ToString());
-            Assert.Equal("Name2", rgszNames[1].String.ToString());
+            Assert.Equal("Width", rgszNames[0].ToString());
+            Assert.Equal("Name2", rgszNames[1].ToString());
             Assert.Equal(1u, cNames);
 
             rgszNames[0].Dispose();

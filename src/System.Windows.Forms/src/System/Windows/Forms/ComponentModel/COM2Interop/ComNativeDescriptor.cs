@@ -104,7 +104,7 @@ namespace System.Windows.Forms.ComponentModel.Com2Interop
 
             using var nameBstr = new BSTR();
             pTypeInfo.GetDocumentation(DispatchID.MEMBERID_NIL, &nameBstr, null, null, null);
-            return nameBstr.String.TrimStart('_').ToString();
+            return nameBstr.AsSpan().TrimStart('_').ToString();
         }
 
         internal static TypeConverter GetConverter()
