@@ -49,6 +49,10 @@ namespace System.Windows.Forms
         private static bool s_checkedThreadAffinity;
         private const string EverettThreadAffinityValue = "EnableSystemEventsThreadAffinityCompatibility";
 
+        private static DarkMode? s_darkMode;
+        private const string DarkModeKeyPath = "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
+        private const string DarkModeKey = "AppsUseLightTheme";
+
         /// <summary>
         ///  Events the user can hook into
         /// </summary>
@@ -61,6 +65,7 @@ namespace System.Windows.Forms
 
         // Used to avoid recursive exit
         private static bool s_exiting;
+        private static ThemedSystemColors s_systemColors;
 
         /// <summary>
         ///  This class is static, there is no need to ever create it.
@@ -284,6 +289,86 @@ namespace System.Windows.Forms
             => ThreadContext.FromCurrent().CustomThreadExceptionHandlerAttached;
 
         internal static Font DefaultFont => s_defaultFontScaled ?? s_defaultFont;
+        public static DarkMode EnvironmentDarkMode
+        {
+            get
+            {
+                int systemDarkMode = -1;
+                // Darkmode is supported when we are >= W11/22000
+                // Technically, we could go earlier, but then the APIs we're using weren't officially public.
+                // For Windows 10 RS2 and above
+                if (OsVersion.IsWindows11_OrGreater())
+                {
+                    try
+                    {
+                        systemDarkMode = (int)Registry.GetValue(
+                            keyName: DarkModeKeyPath,
+                            valueName: DarkModeKey,
+                            defaultValue: -1);
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                return systemDarkMode switch
+                {
+                    0 => DarkMode.Enabled,
+                    1 => DarkMode.Disabled,
+                    _ => DarkMode.NotSupported
+                };
+            }
+        }
+
+        public static DarkMode DefaultDarkMode
+            => s_darkMode ?? (EnvironmentDarkMode is DarkMode.NotSupported ? DarkMode.NotSupported : DarkMode.Disabled);
+
+        public static bool SetDefaultDarkMode(DarkMode darkMode) => darkMode switch
+        {
+            DarkMode.Enabled or
+            DarkMode.Disabled or
+            DarkMode.Inherits => SetDefaultDarkModeCore(darkMode),
+
+            _ => throw new ArgumentException($"{darkMode} is not supported in this context.")
+        };
+
+        private static bool SetDefaultDarkModeCore(DarkMode darkMode)
+        {
+            s_systemColors = null;
+
+            if (EnvironmentDarkMode == DarkMode.NotSupported)
+            {
+                s_darkMode = DarkMode.NotSupported;
+                return false;
+            }
+
+            s_darkMode = darkMode;
+            return true;
+        }
+
+        internal static bool IsDarkModeEnabled => DefaultDarkMode switch
+        {
+            DarkMode.Enabled => true,
+            DarkMode.Disabled => false,
+            _ => EnvironmentDarkMode switch
+            {
+                DarkMode.Enabled => true,
+                DarkMode.Disabled => false,
+                _ => throw new InvalidOperationException("DefaultDarkMode is not set.")
+            }
+        };
+
+        internal static ThemedSystemColors SystemColors
+        {
+            get
+            {
+                s_systemColors ??= IsDarkModeEnabled
+                        ? new DarkThemedSystemColors()
+                        : new LightThemedSystemColors();
+
+                return s_systemColors;
+            }
+        }
 
         /// <summary>
         ///  Gets the path for the executable file that started the application.

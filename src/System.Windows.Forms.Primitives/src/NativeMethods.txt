@@ -65,6 +65,7 @@ DeleteEnhMetaFile
 DeleteObject
 DESKTOP_ACCESS_FLAGS
 DestroyAcceleratorTable
+DwmSetWindowAttribute
 DestroyCursor
 DestroyIcon
 DestroyMenu
