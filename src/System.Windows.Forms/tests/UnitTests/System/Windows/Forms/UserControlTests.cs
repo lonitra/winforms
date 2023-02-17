@@ -1778,6 +1778,50 @@ namespace System.Windows.Forms.Tests
             Assert.Equal(0, createdCallCount);
         }
 
+        [WinFormsFact]
+        public void UserControl_RecreateHandle_OnCreateControl_Creates_Handle_Twice()
+        {
+            using Form form = new();
+            using HandleCreationCountControl control = new();
+            form.Controls.Add(control);
+            form.Shown += (s, e) => { form.Close(); };
+
+            form.ShowDialog();
+
+            // We expect 2 since the handle will be created when show message is received
+            // then recreated when RecreateHandle is called via OnCreateControl.
+            Assert.Equal(2, control.HandleCreationCount);
+        }
+
+        private class HandleCreationCountControl : Control
+        {
+            private bool _value;
+
+            public int HandleCreationCount { get; set; }
+
+            public bool Value
+            {
+                get => _value;
+                set
+                {
+                    if (Value == value)
+                    {
+                        return;
+                    }
+
+                    _value = value;
+                    RecreateHandle();
+                }
+            }
+
+            protected override void OnCreateControl()
+            {
+                base.OnCreateControl();
+                Value = true;
+                HandleCreationCount++;
+            }
+        }
+
         private class SubControl : Control
         {
             public new void SetStyle(ControlStyles flag, bool value) => base.SetStyle(flag, value);

@@ -35,32 +35,5 @@ namespace System.Windows.Forms.UITests
                 return Task.CompletedTask;
             });
         }
-
-        [WinFormsFact]
-        public void ComboBoxTest_DrawMode_OwnerDrawFix_Create_Handle_Success()
-        {
-            using Form form = new();
-            using SubComboBox comboBox = new();
-            form.Controls.Add(comboBox);
-            form.Shown += (s, e) => { form.Close(); };
-
-            form.ShowDialog();
-
-            // We expect 2 since the handle will be created when show message is received
-            // then recreated when DrawMode is set.
-            Assert.Equal(2, comboBox.HandleCreationCount);
-        }
-
-        private class SubComboBox : ComboBox
-        {
-            public int HandleCreationCount { get; set; }
-
-            protected override void OnCreateControl()
-            {
-                base.OnCreateControl();
-                DrawMode = DrawMode.OwnerDrawFixed;
-                HandleCreationCount++;
-            }
-        }
     }
 }
