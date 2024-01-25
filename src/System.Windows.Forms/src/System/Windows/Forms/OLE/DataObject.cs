@@ -128,6 +128,37 @@ public unsafe partial class DataObject :
     internal DataObject(string format, bool autoConvert, object data) : this() => SetData(format, autoConvert, data);
 
     /// <summary>
+    ///  Initializes a new instance of the <see cref="DataObject"/> class, containing the specified data and
+    ///  flagging that this instance was created for clipboard purposes.
+    /// </summary>
+    internal DataObject(object data, bool isWrappedForClipboard) : this(data)
+    {
+        IsWrappedForClipboard = isWrappedForClipboard;
+    }
+
+    /// <summary>
+    ///  Flags that the original data was wrapped for clipboard purposes.
+    /// </summary>
+    internal bool IsWrappedForClipboard { get; private set; }
+
+    /// <summary>
+    ///  Returns the inner data that the <see cref="DataObject"/> was created with if the original data implemented
+    ///  <see cref="IDataObject"/>. Otherwise, returns null.
+    ///  This method should only be used if the <see cref="DataObject"/> was created for clipboard purposes.
+    /// </summary>
+    internal IDataObject? UnwrapInnerIDataObject()
+    {
+        if (!IsWrappedForClipboard)
+        {
+            throw new InvalidOperationException("This method should only be used for clipboard purposes.");
+        }
+
+        return _innerData is DataStore or ComDataObjectAdapter
+            ? null
+            : _innerData;
+    }
+
+    /// <summary>
     ///  Retrieves the data associated with the specified data format, using an automated conversion parameter to
     ///  determine whether to convert the data to the format.
     /// </summary>
