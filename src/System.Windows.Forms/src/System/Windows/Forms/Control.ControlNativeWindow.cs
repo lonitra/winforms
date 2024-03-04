@@ -82,6 +82,9 @@ public partial class Control
             // to occur within control.
             switch (m.MsgInternal)
             {
+                case PInvoke.WM_COMMAND:
+                    string test = "h";
+                    break;
                 case PInvoke.WM_MOUSELEAVE:
                     _control.UnhookMouseEvent();
                     break;

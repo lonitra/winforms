@@ -13144,7 +13144,6 @@ public unsafe partial class Control :
                 }
 
                 break;
-
             case PInvoke.WM_EXITMENULOOP:
             case PInvoke.WM_INITMENUPOPUP:
             case PInvoke.WM_MENUSELECT:

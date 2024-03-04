@@ -160,6 +160,8 @@ public partial class Form : ContainerControl
     private bool _processingDpiChanged;
     private bool _inRecreateHandle;
 
+    private TaskbarItemInfo? _taskbarItemInfo;
+
     /// <summary>
     ///  Initializes a new instance of the <see cref="Form"/> class.
     /// </summary>
@@ -2090,6 +2092,19 @@ public partial class Form : ContainerControl
     {
         add => base.TabStopChanged += value;
         remove => base.TabStopChanged -= value;
+    }
+
+    public TaskbarItemInfo? TaskbarItemInfo
+    {
+        get
+        {
+            if (_taskbarItemInfo is null && ShowInTaskbar)
+            {
+                _taskbarItemInfo = new(HWND);
+            }
+
+            return _taskbarItemInfo;
+        }
     }
 
     /// <summary>
@@ -6590,6 +6605,9 @@ public partial class Form : ContainerControl
     {
         switch (m.MsgInternal)
         {
+            case PInvoke.WM_COMMAND:
+                string test = "hi";
+                break;
             case PInvoke.WM_NCACTIVATE:
                 base.WndProc(ref m);
                 break;

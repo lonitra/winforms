@@ -407,6 +407,7 @@ IsWindowVisible
 IsZoomed
 ITableItemProvider
 ITableProvider
+ITaskbarList4
 ITextDocument
 ITextProvider
 ITextProvider2

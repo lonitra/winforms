@@ -924,6 +924,9 @@ public unsafe partial class NativeWindow : MarshalByRefObject, IWin32Window, IHa
     {
         switch (m.MsgInternal)
         {
+            case PInvoke.WM_COMMAND:
+                string test = "hi";
+                break;
             case PInvoke.WM_DPICHANGED_BEFOREPARENT:
                 WmDpiChangedBeforeParent(ref m);
                 m.ResultInternal = (LRESULT)0;
