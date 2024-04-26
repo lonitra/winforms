@@ -33,6 +33,65 @@ internal sealed partial class BinaryFormattedObject
     private readonly Options _options;
     private TypeResolver? _typeResolver;
 
+    private bool _preCheckedForCycles;
+    private bool _isCycleDetected;
+
+    public bool IsCycleDetected()
+    {
+        if (_preCheckedForCycles || _isCycleDetected)
+        {
+            return _isCycleDetected;
+        }
+
+        _preCheckedForCycles = true;
+
+        HashSet<Id> visited = [];
+        Stack<Id> unvisited = new();
+        unvisited.Push(((SerializationHeader)_records[0]).RootId);
+
+        while (unvisited.Count > 0)
+        {
+            Id currentId = unvisited.Pop();
+            if (visited.Contains(currentId))
+            {
+                _isCycleDetected = true;
+                return true;
+            }
+
+            visited.Add(currentId);
+            IRecord record = _recordMap[currentId];
+            if (record is ClassRecord classRecord)
+            {
+                PendValidMembersToUnvisited(classRecord.MemberValues);
+            }
+            else if (record is ArrayRecord<object?> arrayRecord)
+            {
+                PendValidMembersToUnvisited(arrayRecord.ArrayObjects);
+            }
+        }
+
+        return false;
+
+        void PendValidMembersToUnvisited(IReadOnlyList<object?> members)
+        {
+            foreach (object? memberRecord in members)
+            {
+                if (memberRecord is ClassRecord memberClassRecord)
+                {
+                    unvisited.Push(memberClassRecord.ObjectId);
+                }
+                else if (memberRecord is ArrayRecord<object?> memberArrayRecord)
+                {
+                    unvisited.Push(memberArrayRecord.ObjectId);
+                }
+                else if (memberRecord is MemberReference memberReference)
+                {
+                    unvisited.Push(memberReference.IdRef);
+                }
+            }
+        }
+    }
+
     /// <summary>
     ///  Creates <see cref="BinaryFormattedObject"/> by parsing <paramref name="stream"/>.
     /// </summary>
