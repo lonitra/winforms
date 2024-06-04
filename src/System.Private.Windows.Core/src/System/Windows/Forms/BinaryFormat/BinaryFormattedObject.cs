@@ -27,7 +27,9 @@ internal sealed partial class BinaryFormattedObject
 #pragma warning restore SYSLIB0050
 
     private static readonly Options s_defaultOptions = new();
-    private readonly Options _options;
+
+    // consider making internal to add static binder (binder checks for string, throw if not)
+    internal readonly Options _options;
 
     private readonly RecordMap _recordMap = new();
 

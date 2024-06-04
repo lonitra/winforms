@@ -4,6 +4,7 @@
 using System.Collections.Specialized;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Windows.Win32.System.Com;
 using Com = Windows.Win32.System.Com;
 
@@ -268,6 +269,27 @@ public static class Clipboard
 
         // Note: We delegate argument checking to IDataObject.SetData, if it wants to do so.
         SetDataObject(new DataObject(format, data), copy: true);
+    }
+
+    // do not have <T>. just make it object -- should make <T>
+    public static void SetDataAsJson<T>(string format, T data)
+    {
+        JsonData<T> jsonData = new()
+        {
+            JsonString = JsonSerializer.Serialize(data),
+        };
+
+        SetDataObject(new DataObject(format, jsonData), copy: true);
+    }
+
+    public static void SetDataAsJsonDataObject(string format, object data)
+    {
+        JsonDataObject jsonData = new(data);
+        // Prewrap. The idea here is that users will be able to get GetData() with the same format. We will
+        // get a JsonDataObject when this happens and will query it further to get the actual data.. This does not
+        // end up working bc we get an error from runtime...
+        //SetDataObject(new DataObject(format, jsonData) { IsWrappedForClipboard = true }, copy: true);
+        SetDataObject(jsonData, true);
     }
 
     /// <summary>

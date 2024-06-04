@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Drawing;
+using System.Text.Json;
 
 namespace System.Windows.Forms.BinaryFormat;
 
@@ -53,10 +54,62 @@ internal static class WinFormsBinaryFormattedObjectExtensions
     }
 
     /// <summary>
+    ///  Tries to deserialize this object from JSON.
+    /// </summary>
+    public static bool TryGetObjectFromJson(this BinaryFormattedObject format, out object? @object)
+    {
+        try
+        {
+            @object = format.Deserialize();
+        }
+        catch
+        {
+            // unable to deserialize for some reason
+            @object = null;
+        }
+
+        return @object is not null;
+
+/*        // for non JsonDataObject/IObjectReference way
+        if (format.RootRecord is not ClassWithMembersAndTypes types
+            || types.ClassInfo.Name != typeof(JsonData).FullName
+            || format[3] is not BinaryObjectString data
+            || format[4] is not BinaryObjectString typeName
+            || Type.GetType(typeName.Value) is not Type type)
+        {
+            return false;
+        }
+
+        // we need to pass information about the original type but Type is not marked as serializable ...
+        @object = JsonSerializer.Deserialize(data.Value, type);
+        return true;*/
+    }
+
+    public static bool TryGetObjectFromJsonDataObject(this BinaryFormattedObject format, out object? @object)
+    {
+        @object = null;
+
+        if (format.RootRecord is not ClassWithMembersAndTypes types
+            || types.ClassInfo.Name != typeof(JsonDataObject).FullName
+            || format[3] is not BinaryObjectString typeName
+            || format[4] is not BinaryObjectString data
+            || Type.GetType(typeName.Value) is not Type type)
+        {
+            return false;
+        }
+
+        // we need to pass information about the original type but Type is not marked as serializable ...
+        @object = JsonSerializer.Deserialize(data.Value, type);
+        return true;
+    }
+
+    /// <summary>
     ///  Try to get a supported object.
     /// </summary>
     public static bool TryGetObject(this BinaryFormattedObject format, [NotNullWhen(true)] out object? value) =>
         format.TryGetFrameworkObject(out value)
         || format.TryGetBitmap(out value)
-        || format.TryGetImageListStreamer(out value);
+        || format.TryGetImageListStreamer(out value)
+        //|| format.TryGetObjectFromJson(out value)
+        || format.TryGetObjectFromJsonDataObject(out value);
 }

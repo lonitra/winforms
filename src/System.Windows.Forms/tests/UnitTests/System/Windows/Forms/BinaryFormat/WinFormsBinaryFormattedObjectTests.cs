@@ -6,12 +6,165 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
 
 namespace System.Windows.Forms.BinaryFormat.Tests;
 
 public class WinFormsBinaryFormattedObjectTests
 {
     private static readonly Attribute[] s_visible = [DesignerSerializationVisibilityAttribute.Visible];
+
+    [Serializable]
+    public class WeatherForecast
+    {
+        public DateTimeOffset Date { get; set; }
+        public int TemperatureCelsius { get; set; }
+        public string? Summary { get; set; }
+    }
+
+    [Fact]
+    public void BinaryFormattedObject_Json_FromBinaryFormatter()
+    {
+        WeatherForecast weather = new()
+        {
+            Date = DateTimeOffset.UtcNow,
+            TemperatureCelsius = 25,
+            Summary = "Hot"
+        };
+
+        JsonData<WeatherForecast> json = new()
+        {
+            JsonString = JsonSerializer.Serialize(weather),
+            //FullyQualifiedTypeName = typeof(WeatherForecast).AssemblyQualifiedName!
+        };
+
+        BinaryFormattedObject format = json.SerializeAndParse();
+        ClassWithMembersAndTypes root = format.RootRecord.Should().BeOfType<ClassWithMembersAndTypes>().Subject;
+        root.Name.Should().Be(typeof(JsonData<WeatherForecast>).FullName);
+        root["<JsonString>k__BackingField"].Should().BeOfType<BinaryObjectString>();
+        //root["<FullyQualifiedTypeName>k__BackingField"].Should().BeOfType<BinaryObjectString>();
+        format.TryGetObjectFromJson(out object? result).Should().BeTrue();
+        result.Should().BeOfType<WeatherForecast>();
+        result.Should().BeEquivalentTo(weather);
+    }
+
+    [Fact]
+    public void BinaryFormattedObject_Json_RoundTrip()
+    {
+        WeatherForecast weather = new()
+        {
+            Date = DateTimeOffset.UtcNow,
+            TemperatureCelsius = 25,
+            Summary = "Hot"
+        };
+
+        JsonData<WeatherForecast> json = new()
+        {
+            JsonString = JsonSerializer.Serialize(weather),
+            //FullyQualifiedTypeName = typeof(WeatherForecast).AssemblyQualifiedName!
+        };
+
+        using MemoryStream stream = new();
+        WinFormsBinaryFormatWriter.WriteJsonStream(stream, json);
+
+        stream.Position = 0;
+        BinaryFormattedObject binary = new(stream);
+
+        binary.TryGetObjectFromJson(out object? result).Should().BeTrue();
+        WeatherForecast deserialized = result.Should().BeOfType<WeatherForecast>().Which;
+        deserialized.TemperatureCelsius.Should().Be(25);
+        deserialized.Summary.Should().Be("Hot");
+    }
+
+    [Fact]
+    public void BinaryFormattedObject_JsonDataObject_FromBinaryFormatter()
+    {
+        WeatherForecast weather = new()
+        {
+            Date = DateTimeOffset.UtcNow,
+            TemperatureCelsius = 25,
+            Summary = "Hot"
+        };
+
+        JsonDataObject json = new(weather);
+
+        BinaryFormattedObject format = json.SerializeAndParse();
+        ClassWithMembersAndTypes root = format.RootRecord.Should().BeOfType<ClassWithMembersAndTypes>().Subject;
+        root.Name.Should().Be(typeof(JsonData<WeatherForecast>).FullName);
+        root["<JsonString>k__BackingField"].Should().BeOfType<BinaryObjectString>();
+        //root["<FullyQualifiedTypeName>k__BackingField"].Should().BeOfType<BinaryObjectString>();
+        format.TryGetObjectFromJson(out object? result).Should().BeTrue();
+        result.Should().BeOfType<WeatherForecast>();
+        result.Should().BeEquivalentTo(weather);
+    }
+
+    [StaFact]
+    public void Clipboard_Json_RoundTrip()
+    {
+        WeatherForecast weather = new()
+        {
+            Date = DateTimeOffset.UtcNow,
+            TemperatureCelsius = 25,
+            Summary = "Hot"
+        };
+
+        Clipboard.SetDataAsJson("weather", weather);
+        WeatherForecast deserialized = Clipboard.GetData("weather").Should().BeOfType<WeatherForecast>().Which;
+        deserialized.TemperatureCelsius.Should().Be(25);
+        deserialized.Summary.Should().Be("Hot");
+    }
+
+    [StaFact]
+    public void Clipboard_JsonData_GetDataObject()
+    {
+        WeatherForecast weather = new()
+        {
+            Date = DateTimeOffset.UtcNow,
+            TemperatureCelsius = 25,
+            Summary = "Hot"
+        };
+
+        Clipboard.SetDataAsJson("weather", weather);
+        IDataObject? dataObject = Clipboard.GetDataObject();
+        dataObject.Should().NotBeNull();
+        dataObject.GetDataPresent("weather").Should().BeTrue();
+        WeatherForecast deserialized = dataObject.GetData("weather").Should().BeOfType<WeatherForecast>().Which;
+        deserialized.TemperatureCelsius.Should().Be(25);
+        deserialized.Summary.Should().Be("Hot");
+    }
+
+    [StaFact]
+    public void Clipboard_JsonDataObject_RoundTrip()
+    {
+        WeatherForecast weather = new()
+        {
+            Date = DateTimeOffset.UtcNow,
+            TemperatureCelsius = 25,
+            Summary = "Hot"
+        };
+
+        Clipboard.SetDataAsJsonDataObject("weather", weather);
+        WeatherForecast deserialized = Clipboard.GetData("weather").Should().BeOfType<WeatherForecast>().Which;
+        deserialized.TemperatureCelsius.Should().Be(25);
+        deserialized.Summary.Should().Be("Hot");
+    }
+
+    [StaFact]
+    public void test()
+    {
+        using BinaryFormatterScope formatterScope = new(enable: true);
+        WeatherForecast weather = new()
+        {
+            Date = DateTimeOffset.UtcNow,
+            TemperatureCelsius = 25,
+            Summary = "Hot"
+        };
+
+        Clipboard.SetData("weather", new DataObject(weather));
+        WeatherForecast deserialized = Clipboard.GetData("weather").Should().BeOfType<WeatherForecast>().Which;
+        deserialized.TemperatureCelsius.Should().Be(25);
+        deserialized.Summary.Should().Be("Hot");
+    }
 
     [Fact]
     public void BinaryFormattedObject_Bitmap_FromBinaryFormatter()

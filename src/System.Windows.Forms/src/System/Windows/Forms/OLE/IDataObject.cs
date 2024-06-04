@@ -6,6 +6,8 @@ namespace System.Windows.Forms;
 /// <summary>
 ///  Provides a format-independent mechanism for transferring data.
 /// </summary>
+
+// explore implementing DataObject for JSON scenario and override getdata
 public interface IDataObject
 {
     /// <summary>

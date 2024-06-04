@@ -31,11 +31,60 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
-        this.components = new System.ComponentModel.Container();
-        this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(800, 450);
-        this.Text = "Form1";
+        copyButton = new Button();
+        pasteButton = new Button();
+        beingDrag = new Button();
+        SuspendLayout();
+        // 
+        // copyButton
+        // 
+        copyButton.Location = new Point(12, 12);
+        copyButton.Name = "copyButton";
+        copyButton.Size = new Size(75, 23);
+        copyButton.TabIndex = 0;
+        copyButton.Text = "Copy";
+        copyButton.UseVisualStyleBackColor = true;
+        copyButton.Click += copyButton_Click;
+        // 
+        // pasteButton
+        // 
+        pasteButton.Location = new Point(12, 89);
+        pasteButton.Name = "pasteButton";
+        pasteButton.Size = new Size(75, 23);
+        pasteButton.TabIndex = 1;
+        pasteButton.Text = "Paste";
+        pasteButton.UseVisualStyleBackColor = true;
+        pasteButton.Click += pasteButton_Click;
+        // 
+        // beingDrag
+        // 
+        beingDrag.Location = new Point(517, 12);
+        beingDrag.Name = "beingDrag";
+        beingDrag.Size = new Size(75, 23);
+        beingDrag.TabIndex = 2;
+        beingDrag.Text = "BeginDrag";
+        beingDrag.UseVisualStyleBackColor = true;
+        beingDrag.MouseDown += beginDrag_MouseDown;
+        // 
+        // Form1
+        // 
+        AllowDrop = true;
+        AutoScaleDimensions = new SizeF(7F, 15F);
+        AutoScaleMode = AutoScaleMode.Font;
+        ClientSize = new Size(800, 450);
+        Controls.Add(beingDrag);
+        Controls.Add(pasteButton);
+        Controls.Add(copyButton);
+        Name = "Form1";
+        Text = "Form1";
+        DragDrop += Form1_DragDrop;
+        DragOver += Form1_DragOver;
+        ResumeLayout(false);
     }
 
     #endregion
+
+    private Button copyButton;
+    private Button pasteButton;
+    private Button beingDrag;
 }

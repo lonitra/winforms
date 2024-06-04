@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Serialization;
 using Com = Windows.Win32.System.Com;
 using ComTypes = System.Runtime.InteropServices.ComTypes;
 
@@ -45,6 +46,12 @@ public unsafe partial class DataObject :
     /// </summary>
     public DataObject(object data)
     {
+        // for JsonDataObject approach
+/*        if (data is JsonDataObject jsonDataObject)
+        {
+            _innerData = ComposedDataObject.CreateFromWinFormsDataObject(new DataStore());
+            SetData(jsonDataObject);
+        }*/
         if (data is DataObject dataObject)
         {
             _innerData = dataObject._innerData;
@@ -313,4 +320,5 @@ public unsafe partial class DataObject :
 
     HRESULT Com.IDataObject.Interface.EnumDAdvise(Com.IEnumSTATDATA** ppenumAdvise)
         => ((Com.IDataObject.Interface)_innerData).EnumDAdvise(ppenumAdvise);
+    //public void GetObjectData(SerializationInfo info, StreamingContext context) { }
 }
