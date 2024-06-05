@@ -28,7 +28,7 @@ internal sealed partial class BinaryFormattedObject
 
     private static readonly Options s_defaultOptions = new();
 
-    // consider making internal to add static binder (binder checks for string, throw if not)
+    // consider making internal to add static binder (binder checks for string, throw if not
     internal readonly Options _options;
 
     private readonly RecordMap _recordMap = new();

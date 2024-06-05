@@ -7,6 +7,10 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Windows.Forms.BinaryFormat;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Serialization;
 using Com = Windows.Win32.System.Com;
 using ComTypes = System.Runtime.InteropServices.ComTypes;
 
@@ -572,5 +576,108 @@ public partial class ClipboardTests
         void IDataObject.SetData(Type format, object data) => throw new NotImplementedException();
         void IDataObject.SetData(object data) => throw new NotImplementedException();
         void ComTypes.IDataObject.SetData(ref ComTypes.FORMATETC formatIn, ref ComTypes.STGMEDIUM medium, bool release) => throw new NotImplementedException();
+    }
+
+    [Serializable]
+    public class WeatherForecast
+    {
+        public DateTimeOffset Date { get; set; }
+        public int TemperatureCelsius { get; set; }
+        public string Summary { get; set; }
+    }
+
+    [StaFact]
+    public void ClipBoard_JsonSerialization_RoundTrip()
+    {
+        WeatherForecast weather = new()
+        {
+            Date = DateTimeOffset.UtcNow,
+            TemperatureCelsius = 25,
+            Summary = "Hot"
+        };
+
+        Clipboard.SetDataAsJson("weather", weather);
+        WeatherForecast deserialized = Clipboard.GetData("weather").Should().BeOfType<WeatherForecast>().Which;
+        deserialized.TemperatureCelsius.Should().Be(25);
+        deserialized.Summary.Should().Be("Hot");
+        deserialized.Should().BeEquivalentTo(weather);
+    }
+
+    [StaFact]
+    public void ClipBoard_JsonSerialization_Primitives_RoundTrip()
+    {
+/*        Clipboard.SetDataAsJson("primitive", 1);
+        int deserialized = Clipboard.GetData("primitive").Should().BeOfType<int>().Which;
+        deserialized.Should().Be(1);
+
+        Clipboard.SetDataAsJson("primitive", "string");
+        string deserializedString = Clipboard.GetData("primitive").Should().BeOfType<string>().Which;
+        deserializedString.Should().Be("string");
+
+        Clipboard.SetDataAsJson("primitive", true);
+        bool deserializedBool = Clipboard.GetData("primitive").Should().BeOfType<bool>().Which;
+        deserializedBool.Should().BeTrue();
+
+        Clipboard.SetDataAsJson<int[]>("primitive", [1, 2 ,3]);
+        int[] deserializedArray = Clipboard.GetData("primitive").Should().BeOfType<int[]>().Which;
+        deserializedArray.Should().BeEquivalentTo([1, 2, 3]);*/
+
+/*        Clipboard.SetDataAsJson("primitive", new DataObject("custom", "data"));
+        DataObject deserializedObject = Clipboard.GetData("primitive").Should().BeOfType<DataObject>().Which;
+        deserializedObject.Should().NotBeNull();
+        deserializedObject.GetData("custom").Should().Be("data");*/
+
+        Clipboard.SetDataAsJson("test", new Test());
+        Test deserialized = Clipboard.GetData("test").Should().BeOfType<Test>().Which;
+
+        Clipboard.SetDataAsJson("primitive", new byte[] {1});
+        byte[] deserializedBytes = Clipboard.GetData("primitive").Should().BeOfType<byte[]>().Which;
+        deserializedBytes.Should().BeEquivalentTo(new byte[] {1});
+    }
+
+    [StaFact]
+    public void ConvertersTest()
+    {
+        string json = JsonSerializer.Serialize(new Test(), options: new JsonSerializerOptions() { Converters = { new TestConverter() } });
+        Test test = (Test)JsonSerializer.Deserialize(json, typeof(Test), new JsonSerializerOptions() { Converters = { new TestConverter() } });
+    }
+
+    private class TestConverter : JsonConverter<Test>
+    {
+        public override Test Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return new() { _data = reader.GetString() };
+        }
+
+        public override void Write(Utf8JsonWriter writer, Test value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue("converters!");
+        }
+    }
+
+    [JsonConverter(typeof(TestConverter))]
+    private class Test
+    {
+        public string _data { get; set; }
+    }
+
+    [StaFact]
+    public void ClipBoard_SetDataAsJson_ReturnsExpected()
+    {
+        WeatherForecast weather = new()
+        {
+            Date = DateTimeOffset.UtcNow,
+            TemperatureCelsius = 25,
+            Summary = "Hot"
+        };
+
+        Clipboard.SetDataAsJson("weather", weather);
+        IDataObject dataObject = Clipboard.GetDataObject();
+        dataObject.Should().NotBeNull();
+        dataObject.GetDataPresent("weather").Should().BeTrue();
+        WeatherForecast deserialized = dataObject.GetData("weather").Should().BeOfType<WeatherForecast>().Which;
+        deserialized.TemperatureCelsius.Should().Be(25);
+        deserialized.Summary.Should().Be("Hot");
+        deserialized.Should().BeEquivalentTo(weather);
     }
 }

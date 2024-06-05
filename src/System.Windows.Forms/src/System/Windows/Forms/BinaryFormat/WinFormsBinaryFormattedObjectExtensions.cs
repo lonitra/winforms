@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Drawing;
-using System.Text.Json;
 
 namespace System.Windows.Forms.BinaryFormat;
 
@@ -54,52 +53,20 @@ internal static class WinFormsBinaryFormattedObjectExtensions
     }
 
     /// <summary>
-    ///  Tries to deserialize this object from JSON.
+    ///  Tries to deserialize this object if it was serialized as JSON.
     /// </summary>
     public static bool TryGetObjectFromJson(this BinaryFormattedObject format, out object? @object)
-    {
-        try
-        {
-            @object = format.Deserialize();
-        }
-        catch
-        {
-            // unable to deserialize for some reason
-            @object = null;
-        }
-
-        return @object is not null;
-
-/*        // for non JsonDataObject/IObjectReference way
-        if (format.RootRecord is not ClassWithMembersAndTypes types
-            || types.ClassInfo.Name != typeof(JsonData).FullName
-            || format[3] is not BinaryObjectString data
-            || format[4] is not BinaryObjectString typeName
-            || Type.GetType(typeName.Value) is not Type type)
-        {
-            return false;
-        }
-
-        // we need to pass information about the original type but Type is not marked as serializable ...
-        @object = JsonSerializer.Deserialize(data.Value, type);
-        return true;*/
-    }
-
-    public static bool TryGetObjectFromJsonDataObject(this BinaryFormattedObject format, out object? @object)
     {
         @object = null;
 
         if (format.RootRecord is not ClassWithMembersAndTypes types
-            || types.ClassInfo.Name != typeof(JsonDataObject).FullName
-            || format[3] is not BinaryObjectString typeName
-            || format[4] is not BinaryObjectString data
-            || Type.GetType(typeName.Value) is not Type type)
+            || !types.ClassInfo.Name.Contains(typeof(JsonData).FullName))
         {
+            // The data was not serialized as JSON.
             return false;
         }
 
-        // we need to pass information about the original type but Type is not marked as serializable ...
-        @object = JsonSerializer.Deserialize(data.Value, type);
+        @object = format.Deserialize();
         return true;
     }
 
@@ -110,6 +77,5 @@ internal static class WinFormsBinaryFormattedObjectExtensions
         format.TryGetFrameworkObject(out value)
         || format.TryGetBitmap(out value)
         || format.TryGetImageListStreamer(out value)
-        //|| format.TryGetObjectFromJson(out value)
-        || format.TryGetObjectFromJsonDataObject(out value);
+        || format.TryGetObjectFromJson(out value);
 }

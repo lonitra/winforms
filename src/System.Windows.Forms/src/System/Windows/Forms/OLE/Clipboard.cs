@@ -271,25 +271,25 @@ public static class Clipboard
         SetDataObject(new DataObject(format, data), copy: true);
     }
 
-    // do not have <T>. just make it object -- should make <T>
-    public static void SetDataAsJson<T>(string format, T data)
+    /// <summary>
+    ///  Saves the data onto the clipboard using JSON serialization.
+    /// </summary>
+    /// <exception cref="NotSupportedException">
+    ///  There is no compatible <see cref="Text.Json.Serialization.JsonConverter"/> for <typeparamref name="T"/>
+    ///  or its serializable members.
+    /// </exception>
+    public static void SetDataAsJson<T>(string format, T data, JsonSerializerOptions? options = null)
     {
         JsonData<T> jsonData = new()
         {
-            JsonString = JsonSerializer.Serialize(data),
+            // we need to consider if users want options for serialization.. Should only allow built in for now..?
+            // if we allow for converters, users need to know how it is being serialized (to string or byte[]?)
+            // we need to decide whether we want to allow users ability to choose the way they want to serialize or not
+            // so that they know how to write their converters. Right now... leaning towards only serialize as byte[]
+            JsonString = JsonSerializer.Serialize(data, options),
         };
 
         SetDataObject(new DataObject(format, jsonData), copy: true);
-    }
-
-    public static void SetDataAsJsonDataObject(string format, object data)
-    {
-        JsonDataObject jsonData = new(data);
-        // Prewrap. The idea here is that users will be able to get GetData() with the same format. We will
-        // get a JsonDataObject when this happens and will query it further to get the actual data.. This does not
-        // end up working bc we get an error from runtime...
-        //SetDataObject(new DataObject(format, jsonData) { IsWrappedForClipboard = true }, copy: true);
-        SetDataObject(jsonData, true);
     }
 
     /// <summary>

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Drawing;
-using System.Text.Json;
 
 namespace System.Windows.Forms.BinaryFormat;
 
@@ -15,25 +14,7 @@ internal static class WinFormsBinaryFormatWriter
 
     private static readonly string s_currentWinFormsFullName = typeof(WinFormsBinaryFormatWriter).Assembly.FullName!;
 
-/*    public static unsafe void WriteJsonStream(Stream stream, object @object)
-    {
-        JsonData jsonDataObject = new()
-        {
-            JsonString = JsonSerializer.Serialize(@object),
-            FullyQualifiedTypeName = @object.GetType().AssemblyQualifiedName!
-        };
-
-        using BinaryFormatWriterScope writer = new(stream);
-        new BinaryLibrary(2, s_currentWinFormsFullName).Write(writer);
-        new ClassWithMembersAndTypes(
-            new ClassInfo(1, typeof(JsonData).FullName!, ["<JsonString>k__BackingField", "<FullyQualifiedTypeName>k__BackingField"]),
-            libraryId: 2,
-            new MemberTypeInfo((BinaryType.String, null), (BinaryType.String, null)),
-            new BinaryObjectString(3, jsonDataObject.JsonString),
-            new BinaryObjectString(4, jsonDataObject.FullyQualifiedTypeName)).Write(writer);
-    }*/
-
-    public static unsafe void WriteJsonStream(Stream stream, JsonData jsonData)
+    public static void WriteJsonData(Stream stream, JsonData jsonData)
     {
         using BinaryFormatWriterScope writer = new(stream);
         new BinaryLibrary(2, s_currentWinFormsFullName).Write(writer);
@@ -42,22 +23,9 @@ internal static class WinFormsBinaryFormatWriter
             libraryId: 2,
             new MemberTypeInfo((BinaryType.String, null)),
             new BinaryObjectString(3, jsonData.JsonString)).Write(writer);
-            //new BinaryObjectString(4, jsonDataObject.FullyQualifiedTypeName)).Write(writer);
     }
 
-    public static unsafe void WriteJsonDataObject(Stream stream, JsonDataObject jsonDataObject)
-    {
-        using BinaryFormatWriterScope writer = new(stream);
-        new BinaryLibrary(2, s_currentWinFormsFullName).Write(writer);
-        new ClassWithMembersAndTypes(
-            new ClassInfo(1, jsonDataObject.GetType().FullName!, [nameof(jsonDataObject.FullyQualifiedTypeName), nameof(jsonDataObject.JsonData)]),
-            libraryId: 2,
-            new MemberTypeInfo((BinaryType.String, null), (BinaryType.String, null)),
-            new BinaryObjectString(3, jsonDataObject.FullyQualifiedTypeName),
-            new BinaryObjectString(4, jsonDataObject.JsonData)).Write(writer);
-    }
-
-    public static unsafe void WriteBitmap(Stream stream, Bitmap bitmap)
+    public static void WriteBitmap(Stream stream, Bitmap bitmap)
     {
         using MemoryStream memoryStream = new();
         bitmap.Save(memoryStream);
@@ -113,19 +81,9 @@ internal static class WinFormsBinaryFormatWriter
                 WriteBitmap(stream, bitmap);
                 return true;
             }
-/*            else if (value is IJsonSerializable jsonSerializable)
-            {
-                WriteJsonStream(stream, jsonSerializable);
-                return true;
-            }*/
             else if (value is JsonData jsonData)
             {
-                WriteJsonStream(stream, jsonData);
-                return true;
-            }
-            else if (value is JsonDataObject jsonDataObject)
-            {
-                WriteJsonDataObject(stream, jsonDataObject);
+                WriteJsonData(stream, jsonData);
                 return true;
             }
 
