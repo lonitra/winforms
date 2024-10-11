@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using System.Drawing;
+
 namespace System.Windows.Forms.Tests;
 
 [Collection("Sequential")] // Each registered Clipboard format is an OS singleton,

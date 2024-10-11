@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.Drawing;
-using FluentAssertions;
 using Microsoft.VisualBasic.Devices;
 using DataFormats = System.Windows.Forms.DataFormats;
 using TextDataFormat = System.Windows.Forms.TextDataFormat;
@@ -91,7 +90,9 @@ public class ClipboardProxyTests
         System.Windows.Forms.Clipboard.GetText().Should().Be(clipboard.GetText());
         System.Windows.Forms.Clipboard.GetText(TextDataFormat.UnicodeText).Should().Be(clipboard.GetText(TextDataFormat.UnicodeText));
         clipboard.GetText(TextDataFormat.UnicodeText).Should().Be(text);
-    }??    [WinFormsFact]
+    }
+
+    [WinFormsFact]
     public void SetDataAsJson()
     {
         var clipboard = new Computer().Clipboard;
