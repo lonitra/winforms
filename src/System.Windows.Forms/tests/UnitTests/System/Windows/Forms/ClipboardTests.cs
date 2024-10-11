@@ -455,6 +455,14 @@ public class ClipboardTests
         action.Should().Throw<ArgumentNullException>().WithParameterName("image");
     }
 
+    [WinFormsFact]
+    public void Clipboard_SetText_InvokeString_GetReturnsExpected()
+    {
+        Clipboard.SetText("text");
+        Assert.Equal("text", Clipboard.GetText());
+        Assert.True(Clipboard.ContainsText());
+    }
+
     [WinFormsTheory]
     [EnumData<TextDataFormat>]
     public void Clipboard_SetText_InvokeStringTextDataFormat_GetReturnsExpected(TextDataFormat format)
@@ -617,5 +625,68 @@ public class ClipboardTests
 
         DataObject dataObject = Clipboard.GetDataObject().Should().BeOfType<DataObject>().Which;
         dataObject.GetData(DataFormats.Text).Should().Be(testString);
+    }
+
+    [WinFormsTheory]
+    [InlineData("")]
+    [InlineData(null)]
+    [InlineData(" ")]
+    public void Clipboard_SetDataAsJson_EmptyFormat_Throws(string? format)
+    {
+        Action action = () => Clipboard.SetDataAsJson(format!, 1);
+        action.Should().Throw<ArgumentException>();
+    }
+
+    [WinFormsFact]
+    public void Clipboard_SetDataAsJson_DataObject_Throws()
+    {
+        Action action = () => Clipboard.SetDataAsJson("format", new DataObject());
+        action.Should().Throw<InvalidOperationException>();
+    }
+
+    [WinFormsFact]
+    public void Clipboard_SetDataAsJson_ReturnsExpected()
+    {
+        Point point = new() { X = 1, Y = 1 };
+
+        Clipboard.SetDataAsJson("point", point);
+        IDataObject? dataObject = Clipboard.GetDataObject();
+        dataObject.Should().NotBeNull();
+        dataObject!.GetDataPresent("point").Should().BeTrue();
+        Point deserialized = dataObject.GetData("point").Should().BeOfType<Point>().Which;
+        deserialized.Should().BeEquivalentTo(point);
+    }
+
+    [WinFormsTheory]
+    [BoolData]
+    public void Clipboard_SetDataObject_WithJson_ReturnsExpected(bool copy)
+    {
+        Point point = new() { X = 1, Y = 1 };
+
+        DataObject dataObject = new();
+        dataObject.SetDataAsJson("point", point);
+
+        Clipboard.SetDataObject(dataObject, copy);
+        IDataObject? returnedDataObject = Clipboard.GetDataObject();
+        returnedDataObject.Should().NotBeNull();
+        Point deserialized = returnedDataObject!.GetData("point").Should().BeOfType<Point>().Which;
+        deserialized.Should().BeEquivalentTo(point);
+    }
+
+    [WinFormsTheory]
+    [BoolData]
+    public void Clipboard_SetDataObject_WithMultipleData_ReturnsExpected(bool copy)
+    {
+        Point point1 = new() { X = 1, Y = 1 };
+        Point point2 = new() { Y = 2, X = 2 };
+        DataObject data = new();
+        data.SetDataAsJson("point1", point1);
+        data.SetDataAsJson("point2", point2);
+        data.SetData("Mystring", "test");
+        Clipboard.SetDataObject(data, copy);
+
+        Clipboard.GetData("point1").Should().BeOfType<Point>().Which.Should().BeEquivalentTo(point1);
+        Clipboard.GetData("point2").Should().BeOfType<Point>().Which.Should().BeEquivalentTo(point2);
+        Clipboard.GetData("Mystring").Should().Be("test");
     }
 }

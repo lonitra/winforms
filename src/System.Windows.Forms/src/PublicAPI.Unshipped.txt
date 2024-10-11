@@ -1,1 +1,3 @@
 System.Windows.Forms.DataGridViewCellStyle.Font.get -> System.Drawing.Font?
+static System.Windows.Forms.Clipboard.SetDataAsJson<T>(string! format, T data) -> void
+System.Windows.Forms.DataObject.SetDataAsJson<T>(string! format, T data) -> void

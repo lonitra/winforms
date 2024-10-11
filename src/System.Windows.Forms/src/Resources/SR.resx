@@ -7015,4 +7015,7 @@ Stack trace where the illegal operation occurred was:
   <data name="FormOrTaskDialog_NoSyncContextForShowAsync" xml:space="preserve">
     <value>Failed to retrieve the Synchronization Context for showing the Form asynchronously.</value>
   </data>
+  <data name="InvalidTypeForSetDataAsJson" xml:space="preserve">
+    <value>DataObject cannot be JSON serialized meaningfully. Set the data by using {0} instead.</value>
+  </data>
 </root>
