@@ -12,7 +12,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.Json;
 using System.Windows.Forms.BinaryFormat;
 using System.Windows.Forms.Nrbf;
-using System.Text.Json;
 
 namespace System.Private.Windows.Core.BinaryFormat.Tests;
 
@@ -24,7 +23,7 @@ public class WinFormsBinaryFormattedObjectTests
     public void BinaryFormattedObject_NonJsonData_RemainsSerialized()
     {
         Point point = new() { X = 1, Y = 1 };
-        BinaryFormattedObject format = point.SerializeAndParse();
+        SerializationRecord format = point.SerializeAndDecode();
         format.TryGetObjectFromJson(out _).Should().BeFalse();
     }
 
@@ -42,9 +41,8 @@ public class WinFormsBinaryFormattedObjectTests
         WinFormsBinaryFormatWriter.WriteJsonData(stream, json);
 
         stream.Position = 0;
-        BinaryFormattedObject binary = new(stream);
-        binary[2].Should().BeOfType<BinaryLibrary>().Which
-            .LibraryName.Should().Be("System.Private.Windows.VirtualJson");
+        SerializationRecord binary = NrbfDecoder.Decode(stream);
+        binary.TypeName.AssemblyName!.FullName.Should().Be(IJsonData.CustomAssemblyName);
         binary.TryGetObjectFromJson(out object? result).Should().BeTrue();
         Point deserialized = result.Should().BeOfType<Point>().Which;
         deserialized.Should().BeEquivalentTo(point);
