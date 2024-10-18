@@ -302,7 +302,7 @@ public static class Clipboard
     /// </exception>
     /// <exception cref="InvalidOperationException">
     ///  <see cref="DataObject"/> was passed in as the data. <see cref="DataObject"/> cannot be JSON serialized meaningfully.
-    ///  If <see cref="DataObject"/> needs to be placed on the clipboard, use <see cref="DataObject.SetDataAsJson{T}(string, T)"/>
+    ///  If <see cref="DataObject"/> needs to be placed on the clipboard, use <see cref="DataObject.SetDataAsJson(string, object)"/>
     ///  to JSON serialize the data to be held in the <see cref="DataObject"/> then set the <see cref="DataObject"/>
     ///  onto the clipboard via <see cref="SetDataObject(object)"/>.
     /// </exception>
@@ -324,7 +324,7 @@ public static class Clipboard
     ///   on custom converters for JSON serialization.
     ///  </para>
     /// </remarks>
-    public static void SetDataAsJson<T>(string format, T data)
+    public static void SetDataAsJson(string format, object data)
     {
         if (string.IsNullOrWhiteSpace(format.OrThrowIfNull()))
         {
@@ -337,9 +337,10 @@ public static class Clipboard
             throw new InvalidOperationException($"DataObject cannot be JSON serialized meaningfully. Set the data by using {nameof(SetData)} instead");
         }
 
-        JsonData<T> jsonData = new()
+        JsonData jsonData = new()
         {
-            JsonBytes = JsonSerializer.SerializeToUtf8Bytes(data)
+            JsonBytes = JsonSerializer.SerializeToUtf8Bytes(data),
+            OriginalAssemblyQualifiedTypeName = data.GetType().AssemblyQualifiedName!
         };
 
         SetDataObject(new DataObject(format, jsonData), copy: true);
