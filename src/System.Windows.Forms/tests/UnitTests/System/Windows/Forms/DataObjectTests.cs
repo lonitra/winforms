@@ -2877,11 +2877,13 @@ public partial class DataObjectTests
     {
         // This test demonstrates one way users can achieve custom JSON serialization behavior if the
         // default JSON serialization behavior that is used in SetDataAsJson APIs is not enough for their scenario.
+        Font font = new("Consolas", emSize: 10);
         WeatherForecast forecast = new()
         {
             Date = DateTimeOffset.Now,
             TemperatureCelsius = 25,
-            Summary = "Hot"
+            Summary = "Hot",
+            Font = font
         };
 
         DataObject dataObject = new();
@@ -2891,6 +2893,7 @@ public partial class DataObjectTests
         deserialized.Date.ToString(offsetFormat).Should().Be(forecast.Date.ToString(offsetFormat));
         deserialized.TemperatureCelsius.Should().Be(forecast.TemperatureCelsius);
         deserialized.Summary.Should().Be($"{forecast.Summary} custom!");
+        deserialized.Font.Should().Be(font);
     }
 
     [JsonConverter(typeof(WeatherForecastJsonConverter))]
@@ -2899,6 +2902,7 @@ public partial class DataObjectTests
         public DateTimeOffset Date { get; set; }
         public int TemperatureCelsius { get; set; }
         public string Summary { get; set; }
+        public Font Font { get; set; }
     }
 
     private class WeatherForecastJsonConverter : JsonConverter<WeatherForecast>
@@ -2906,10 +2910,18 @@ public partial class DataObjectTests
         public override WeatherForecast Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             WeatherForecast result = new();
+            string fontFamily = null;
+            int size = -1;
             while (reader.Read())
             {
                 if (reader.TokenType == JsonTokenType.EndObject)
                 {
+                    if (fontFamily is null || size == -1)
+                    {
+                        throw new JsonException();
+                    }
+
+                    result.Font = new(fontFamily, size);
                     return result;
                 }
 
@@ -2933,6 +2945,12 @@ public partial class DataObjectTests
                     case nameof(WeatherForecast.Summary):
                         result.Summary = reader.GetString();
                         break;
+                    case nameof(Font.FontFamily):
+                        fontFamily = reader.GetString();
+                        break;
+                    case nameof(Font.Size):
+                        size = reader.GetInt32();
+                        break;
                     default:
                         throw new JsonException();
                 }
@@ -2947,6 +2965,8 @@ public partial class DataObjectTests
             writer.WriteString(nameof(WeatherForecast.Date), value.Date.ToString("MM/dd/yyyy"));
             writer.WriteNumber(nameof(WeatherForecast.TemperatureCelsius), value.TemperatureCelsius);
             writer.WriteString(nameof(WeatherForecast.Summary), $"{value.Summary} custom!");
+            writer.WriteString(nameof(Font.FontFamily), value.Font.FontFamily.Name);
+            writer.WriteNumber(nameof(Font.Size), value.Font.Size);
             writer.WriteEndObject();
         }
     }
