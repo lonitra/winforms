@@ -4804,6 +4804,7 @@ public unsafe partial class Control :
         Point cursorOffset,
         bool useDefaultDragImage)
     {
+        data.OrThrowIfNull(nameof(data));
         if (typeof(T) == typeof(DataObject))
         {
             // TODO: Localize string
