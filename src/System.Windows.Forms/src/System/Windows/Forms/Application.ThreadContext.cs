@@ -568,21 +568,8 @@ public sealed partial class Application
 
         internal unsafe ApartmentState OleRequired()
         {
-            if (!_oleInitialized)
-            {
-                HRESULT hr = PInvoke.OleInitialize(pvReserved: (void*)null);
-
-                _oleInitialized = true;
-                if (hr == HRESULT.RPC_E_CHANGED_MODE)
-                {
-                    // This could happen if the thread was already initialized for MTA
-                    // and then we call OleInitialize which tries to initialize it for STA
-                    // This currently happens while profiling.
-                    _externalOleInit = true;
-                }
-            }
-
-            return _externalOleInit ? ApartmentState.MTA : ApartmentState.STA;
+            bool initialized = ThreadContextCore.EnsureOleInitializedSta();
+            return initialized ? ApartmentState.STA : ApartmentState.MTA;
         }
 
         private void OnAppThreadExit(object? sender, EventArgs e) => Dispose(postQuit: true);

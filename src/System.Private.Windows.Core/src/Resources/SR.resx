@@ -206,4 +206,7 @@
   <data name="Serialization_MissingType" xml:space="preserve">
     <value>Could not find type '{0}'.</value>
   </data>
+  <data name="ThreadMustBeSTA" xml:space="preserve">
+    <value>Current thread must be set to single thread apartment (STA) mode before OLE calls can be made.</value>
+  </data>
 </root>

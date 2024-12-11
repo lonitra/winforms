@@ -188,6 +188,8 @@ OLE_E_INVALIDRECT
 OLE_E_NOCONNECTION
 OLE_E_PROMPTSAVECANCELLED
 OleCreatePictureIndirect
+OleInitialize
+OleUninitialize
 PeekMessage
 PostMessage
 PixelFormat*

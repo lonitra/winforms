@@ -5541,9 +5541,6 @@ Stack trace where the illegal operation occurred was:
   <data name="TextParseFailedFormat" xml:space="preserve">
     <value>Parse of Text("{0}") expected text in the format "{1}" did not succeed.</value>
   </data>
-  <data name="ThreadMustBeSTA" xml:space="preserve">
-    <value>Current thread must be set to single thread apartment (STA) mode before OLE calls can be made. Ensure that your Main function has STAThreadAttribute marked on it.</value>
-  </data>
   <data name="ThreadNoLongerValid" xml:space="preserve">
     <value>An error occurred invoking the method.  The destination thread no longer exists.</value>
   </data>
