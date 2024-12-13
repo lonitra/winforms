@@ -1,11 +1,9 @@
 <Project>
-
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-
     <!-- Runtime dependencies-->
     <PackageVersion Include="Microsoft.NETCore.Platforms" Version="$(MicrosoftNETCorePlatformsPackageVersion)" />
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
@@ -22,14 +20,12 @@
     <PackageVersion Include="System.Management" Version="8.0.0" />
     <PackageVersion Include="System.Resources.Extensions" Version="$(SystemResourcesExtensionsPackageVersion)" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
-    <PackageVersion Include="System.Runtime.Serialization.Formatters" Version="$(SystemRuntimeSerializationFormattersPackageVersion)" />
+    <PackageVersion Include="System.Runtime.Serialization.Formatters" Version="9.0.0" />
     <PackageVersion Include="System.Windows.Extensions" Version="$(SystemWindowsExtensionsPackageVersion)" />
     <PackageVersion Include="System.Windows.Extensions.TestData" Version="$(SystemWindowsExtensionsTestDataVersion)" />
     <PackageVersion Include="System.Windows.Forms.DataVisualization" Version="1.0.0-prerelease.20110.1" />
-
     <!-- Arcade -->
     <PackageVersion Include="Microsoft.DotNet.GenFacades" Version="$(MicrosoftDotNetGenFacadesPackageVersion)" />
-
     <!-- Test related -->
     <PackageVersion Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageVersion Include="Moq" Version="$(MoqPackageVersion)" />
@@ -39,12 +35,10 @@
     <PackageVersion Include="Verify.Xunit" Version="$(VerifyXunitVersion)" />
     <PackageVersion Include="xunit.assert" Version="$(XUnitAssertVersion)" Condition="'$(IsTestProject)' != 'true'" />
     <PackageVersion Include="xunit.stafact" Version="$(XUnitStaFactPackageVersion)" />
-
     <!-- Code coverage-->
     <PackageVersion Include="coverlet.msbuild" Version="$(CoverletMSBuildPackageVersion)" />
     <PackageVersion Include="Codecov" Version="$(CodecovVersion)" />
     <PackageVersion Include="ReportGenerator" Version="$(ReportGeneratorVersion)" />
-
     <!-- External analyzers-->
     <PackageVersion Include="CSharpIsNullAnalyzer" Version="$(CSharpIsNullAnalyzersVersion)" />
     <PackageVersion Include="DotNetAnalyzers.DocumentationAnalyzers" Version="$(DotNetAnalyzersDocumentationAnalyzersVersion)" />
@@ -67,12 +61,10 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageVersion Include="NuGet.Packaging" Version="$(NugetPackagingVersion)" />
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersVersion)" />
-
     <!-- Additional unchanging dependencies -->
     <PackageVersion Include="Microsoft.TargetingPack.NETFramework.v4.7.2" Version="$(MicrosoftTargetingPackNETFrameworkv472PackageVersion)" />
     <PackageVersion Include="Microsoft.WindowsDesktop.App.Ref" Version="$(MicrosoftWindowsDesktopAppRefv30PackageVersion)" />
     <PackageVersion Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
-
     <!-- Unknown -->
     <PackageVersion Include="Microsoft.DotNet.IBCMerge" Version="$(MicrosoftDotNetIBCMergeVersion)" Condition="'$(UsingToolIbcOptimization)' == 'true'" />
     <PackageVersion Include="Microsoft.ManifestTool.CrossPlatform" Version="$(MicrosoftManifestToolCrossPlatformVersion)" />

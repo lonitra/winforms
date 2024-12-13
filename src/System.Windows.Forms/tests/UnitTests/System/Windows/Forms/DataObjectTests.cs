@@ -2737,8 +2737,10 @@ public partial class DataObjectTests
         using var inDataPtr = ComHelpers.GetComScope<Com.IDataObject>(inData);
         IDataObject outData = dropTargetAccessor.CreateDelegate<CreateWinFormsDataObjectForOutgoingDropData>()(inDataPtr);
         outData.Should().BeSameAs(data);
-        outData.GetDataPresent("point").Should().BeTrue();
-        outData.GetData("point").Should().BeOfType<Point>().Which.Should().BeEquivalentTo(point);
+        ITypedDataObject typedOutData = outData.Should().BeAssignableTo<ITypedDataObject>().Subject;
+        typedOutData.GetDataPresent("point").Should().BeTrue();
+        typedOutData.TryGetData("point", out Point deserialized).Should().BeTrue();
+        deserialized.Should().BeEquivalentTo(point);
     }
 
     [WinFormsFact]
@@ -2847,7 +2849,8 @@ public partial class DataObjectTests
         DataObject dataObject = new();
         dataObject.SetDataAsJson("point", point);
         dataObject.GetDataPresent("point").Should().BeTrue();
-        dataObject.GetData("point").Should().BeOfType<Point>().Which.Should().BeEquivalentTo(point);
+        dataObject.TryGetData("point", out Point deserialized).Should().BeTrue();
+        deserialized.Should().BeEquivalentTo(point);
     }
 
     [WinFormsFact]
@@ -2858,7 +2861,8 @@ public partial class DataObjectTests
         dataObject.SetDataAsJson("point", point);
         DataObject wrapped = new(dataObject);
         wrapped.GetDataPresent("point").Should().BeTrue();
-        wrapped.GetData("point").Should().BeOfType<Point>().Which.Should().BeEquivalentTo(point);
+        wrapped.TryGetData("point", out Point deserialized).Should().BeTrue();
+        deserialized.Should().BeEquivalentTo(point);
     }
 
     [WinFormsFact]
@@ -2871,9 +2875,12 @@ public partial class DataObjectTests
         data.SetDataAsJson("point2", point2);
         data.SetData("Mystring", "test");
 
-        data.GetData("point1").Should().BeOfType<Point>().Which.Should().BeEquivalentTo(point1);
-        data.GetData("point2").Should().BeOfType<Point>().Which.Should().BeEquivalentTo(point2);
-        data.GetData("Mystring").Should().Be("test");
+        data.TryGetData("point1", out Point deserializedPoint1).Should().BeTrue();
+        deserializedPoint1.Should().BeEquivalentTo(point1);
+        data.TryGetData("point2", out Point deserializedPoint2).Should().BeTrue();
+        deserializedPoint2.Should().BeEquivalentTo(point2);
+        data.TryGetData("Mystring", out string deserializedString).Should().BeTrue();
+        deserializedString.Should().Be("test");
     }
 
     [WinFormsFact]
@@ -2892,7 +2899,7 @@ public partial class DataObjectTests
 
         DataObject dataObject = new();
         dataObject.SetDataAsJson("custom", forecast);
-        WeatherForecast deserialized = dataObject.GetData("custom").Should().BeOfType<WeatherForecast>().Subject;
+        dataObject.TryGetData("custom", out WeatherForecast deserialized).Should().BeTrue();
         string offsetFormat = "MM/dd/yyyy";
         deserialized.Date.ToString(offsetFormat).Should().Be(forecast.Date.ToString(offsetFormat));
         deserialized.TemperatureCelsius.Should().Be(forecast.TemperatureCelsius);

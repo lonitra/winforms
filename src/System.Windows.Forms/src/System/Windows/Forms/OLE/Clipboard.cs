@@ -566,7 +566,8 @@ public static class Clipboard
         JsonData<T> jsonData = new()
         {
             JsonBytes = JsonSerializer.SerializeToUtf8Bytes(data),
-        };
+            InnerTypeAssemblyQualifiedName = typeof(T).ToTypeName().AssemblyQualifiedName
+    };
 
         SetDataObject(new DataObject(format, jsonData), copy: true);
     }

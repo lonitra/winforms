@@ -112,7 +112,7 @@ public unsafe partial class DataObject :
             throw new InvalidOperationException($"DataObject will serialize as empty. JSON serialize the data within {nameof(data)}, then use {nameof(SetData)} instead.");
         }
 
-        SetData(format, new JsonData<T>() { JsonBytes = JsonSerializer.SerializeToUtf8Bytes(data) });
+        SetData(format, new JsonData<T>() { JsonBytes = JsonSerializer.SerializeToUtf8Bytes(data), InnerTypeAssemblyQualifiedName = typeof(T).ToTypeName().AssemblyQualifiedName });
     }
 
     /// <inheritdoc cref="SetDataAsJson{T}(string, bool, T)"/>
@@ -126,7 +126,7 @@ public unsafe partial class DataObject :
             throw new InvalidOperationException($"DataObject will serialize as empty. JSON serialize the data within  {nameof(data)}, then use {nameof(SetData)}  instead.");
         }
 
-        SetData(typeof(T), new JsonData<T>() { JsonBytes = JsonSerializer.SerializeToUtf8Bytes(data) });
+        SetData(typeof(T), new JsonData<T>() { JsonBytes = JsonSerializer.SerializeToUtf8Bytes(data), InnerTypeAssemblyQualifiedName = typeof(T).ToTypeName().AssemblyQualifiedName });
     }
 
     /// <summary>
@@ -168,20 +168,17 @@ public unsafe partial class DataObject :
             throw new InvalidOperationException($"DataObject will serialize as empty. JSON serialize the data within {nameof(data)}, then use {nameof(SetData)} instead.");
         }
 
-        SetData(format, autoConvert, new JsonData<T>() { JsonBytes = JsonSerializer.SerializeToUtf8Bytes(data) });
+        SetData(format, autoConvert, new JsonData<T>() { JsonBytes = JsonSerializer.SerializeToUtf8Bytes(data), InnerTypeAssemblyQualifiedName = typeof(T).ToTypeName().AssemblyQualifiedName });
     }
 
     #region IDataObject
+    // Should we bar GetData from being able to get JsonData more aggressively ?
     [Obsolete(
         Obsoletions.DataObjectGetDataMessage,
         error: false,
         DiagnosticId = Obsoletions.ClipboardGetDataDiagnosticId,
         UrlFormat = Obsoletions.SharedUrlFormat)]
-    public virtual object? GetData(string format, bool autoConvert)
-    {
-        object? data = ((IDataObject)_innerData).GetData(format, autoConvert);
-        return data is IJsonData jsonData ? jsonData.Deserialize() : data;
-    }
+    public virtual object? GetData(string format, bool autoConvert) => _innerData.GetData(format, autoConvert);
 
     [Obsolete(
         Obsoletions.DataObjectGetDataMessage,

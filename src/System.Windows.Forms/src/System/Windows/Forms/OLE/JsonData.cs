@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace System.Private.Windows;
@@ -60,14 +61,14 @@ namespace System.Private.Windows;
 ///
 ///     if (record is not System.Formats.Nrbf.ClassRecord types
 ///         || types.GetRawValue("<JsonBytes>k__BackingField") is not System.Formats.Nrbf.SZArrayRecord<byte> byteData
-///         || !System.Reflection.Metadata.TypeName.TryParse(types.TypeName.FullName.ToCharArray(), out System.Reflection.Metadata.TypeName? result))
+///         || types.GetRawValue("<InnerTypeAssemblyQualifiedName>k__BackingField") is not string innerTypeName
+///         || !System.Reflection.Metadata.TypeName.TryParse(innerTypeName.ToCharArray(), out System.Reflection.Metadata.TypeName? result))
 ///     {
 ///         // This is supposed to be JsonData, but somehow the data is corrupt.
 ///         throw new InvalidOperationException();
 ///     }
 ///
-///     System.Reflection.Metadata.TypeName genericTypeName = result.GetGenericArguments().Single();
-///     // TODO: Additional checking on generic type to block unwanted types if needed.
+///     // TODO: Additional checking on result TypeName to ensure it is expected type.
 ///
 ///     // This should return the original data that was JSON serialized.
 ///     System.Text.Json.JsonSerializer.Deserialize(byteData.GetArray(), genericType);
@@ -85,17 +86,19 @@ namespace System.Private.Windows;
 ///  // OR
 ///  // Not recommended: deserialize using BinaryFormatter.
 ///
-///  // This definition must live in an assembly named System.Private.Windows.VirtualJson in order to work as expected.
+///  // This definition must live in an assembly named System.Private.Windows.VirtualJson and referenced in order to work as expected.
 ///  namespace System.Private.Windows;
 ///  [Serializable]
-///  struct JsonData<T> : IObjectReference
+///  struct JsonData : IObjectReference
 ///  {
 ///     public byte[] JsonBytes { get; set; }
 ///
+///     public string InnerTypeAssemblyQualifiedName { get; set; }
+///
 ///     public object GetRealObject(StreamingContext context)
 ///     {
-///         // TODO: Additional checking on generic type to block unwanted types if needed.
-///         return JsonSerializer.Deserialize(JsonBytes, typeof(T)) ?? throw new InvalidOperationException();
+///         // TODO: Additional checking on InnerTypeAssemblyQualifiedName to ensure it is expected type.
+///         return JsonSerializer.Deserialize(JsonBytes, typeof(ExpectedType)) ?? throw new InvalidOperationException();
 ///     }
 ///  }
 ///  ]]>
@@ -105,14 +108,14 @@ internal struct JsonData<T> : IJsonData
 {
     public byte[] JsonBytes { get; set; }
 
-    public readonly string TypeFullName => $"{typeof(JsonData<T>).FullName}";
+    public string InnerTypeAssemblyQualifiedName { get; set; }
 
     public readonly object Deserialize()
     {
-        object? result = null;
+        object? result;
         try
         {
-            result = JsonSerializer.Deserialize(JsonBytes, typeof(T));
+            result = JsonSerializer.Deserialize<T>(JsonBytes);
         }
         catch (Exception ex)
         {
@@ -134,7 +137,16 @@ internal interface IJsonData
 
     byte[] JsonBytes { get; set; }
 
-    string TypeFullName { get; }
+    /// <summary>
+    ///  The assembly qualified name of the T in <see cref="JsonData{T}"/>. This name should
+    ///  have any <see cref="TypeForwardedFromAttribute"/> names taken into account.
+    /// </summary>
+    string InnerTypeAssemblyQualifiedName { get; set; }
 
+    /// <summary>
+    ///  Deserializes the data stored in the JsonData. This is
+    ///  typically called when we are not dealing with a binary formatted record.
+    /// </summary>
+    /// <param name="deserializeTo">Type caller wants to deserialize to.</param>
     object Deserialize();
 }

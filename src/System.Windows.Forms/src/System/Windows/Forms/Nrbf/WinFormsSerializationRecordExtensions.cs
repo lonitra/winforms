@@ -4,6 +4,7 @@
 using System.Drawing;
 using System.Formats.Nrbf;
 using System.Private.Windows;
+using System.Private.Windows.Core.BinaryFormat;
 using System.Reflection.Metadata;
 using System.Text.Json;
 
@@ -59,7 +60,10 @@ internal static class WinFormsSerializationRecordExtensions
     /// <summary>
     ///  Tries to deserialize this object if it was serialized as JSON.
     /// </summary>
-    public static bool TryGetObjectFromJson(this SerializationRecord record, out object? @object)
+    /// <returns>
+    ///  <see langword="true"/> if the data was serialized as JSON and was successfully deserialized. Otherwise, <see langword="false"/>.
+    /// </returns>
+    public static bool TryGetObjectFromJson<T>(this SerializationRecord record, ITypeResolver resolver, out object? @object)
     {
         @object = null;
 
@@ -71,21 +75,28 @@ internal static class WinFormsSerializationRecordExtensions
 
         if (record is not ClassRecord types
             || types.GetRawValue("<JsonBytes>k__BackingField") is not SZArrayRecord<byte> byteData
-            || !TypeName.TryParse(types.TypeName.FullName, out TypeName? result)
-            || Type.GetType(result.GetGenericArguments().Single().AssemblyQualifiedName) is not Type genericType)
+            || types.GetRawValue("<InnerTypeAssemblyQualifiedName>k__BackingField") is not string innerTypeFullName
+            || !TypeName.TryParse(innerTypeFullName, out TypeName? genericTypeName))
         {
             // This is supposed to be JsonData, but somehow the binary formatted data is corrupt.
             throw new InvalidOperationException();
         }
 
-        // TODO: We should get the type from the Func<TypeName, Type> that will be passed down instead of using Type.GetType()
+        Type genericType = resolver.GetType(genericTypeName);
+        if (!genericType.IsAssignableTo(typeof(T)))
+        {
+            // Not the type the caller asked for.
+            return false;
+        }
+
         try
         {
-            @object = JsonSerializer.Deserialize(byteData.GetArray(), genericType);
+            @object = JsonSerializer.Deserialize<T>(byteData.GetArray());
         }
         catch (Exception ex)
         {
-            @object = new NotSupportedException(ex.Message);
+            // what should we do here ...? Look to see what Tanya did when NotSupportedException shown.
+            throw new NotSupportedException(ex.Message);
         }
 
         return true;
@@ -101,6 +112,5 @@ internal static class WinFormsSerializationRecordExtensions
 
     public static bool TryGetCommonObject(this SerializationRecord record, [NotNullWhen(true)] out object? value) =>
         record.TryGetResXObject(out value)
-        || record.TryGetDrawingPrimitivesObject(out value)
-        || record.TryGetObjectFromJson(out value);
+        || record.TryGetDrawingPrimitivesObject(out value);
 }

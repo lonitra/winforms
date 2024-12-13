@@ -45,9 +45,8 @@ public class ClipboardComTests
         dataObject.SetDataAsJson("point", point);
 
         Clipboard.SetDataObject(dataObject, copy);
-        IDataObject? returnedDataObject = Clipboard.GetDataObject();
-        returnedDataObject.Should().NotBeNull();
-        Point deserialized = returnedDataObject!.GetData("point").Should().BeOfType<Point>().Which;
+        ITypedDataObject returnedDataObject = Clipboard.GetDataObject().Should().BeAssignableTo<ITypedDataObject>().Subject;
+        returnedDataObject.TryGetData("point", out Point deserialized).Should().BeTrue();
         deserialized.Should().BeEquivalentTo(point);
     }
 }

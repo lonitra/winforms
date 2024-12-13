@@ -10,6 +10,9 @@
     <EnableXlfLocalization>false</EnableXlfLocalization>
     <UpdateXlfOnBuild>false</UpdateXlfOnBuild>
     <IsTestUtilityProject>true</IsTestUtilityProject>
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    <ClipboardDragDropEnableUnsafeBinaryFormatterSerialization>true</ClipboardDragDropEnableUnsafeBinaryFormatterSerialization>
+    <ClipboardDragDropEnableNrbfSerialization>false</ClipboardDragDropEnableNrbfSerialization>
   </PropertyGroup>
 
   <!-- Experiment with single file deployments
@@ -19,6 +22,9 @@
     <SelfContained>false</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.Serialization.Formatters" />
+  </ItemGroup>
 
   <!-- These normally come from $(UseWindowsForms) when $(ImplicitUsings) is enabled -->
   <ItemGroup>

@@ -12,5 +12,8 @@ public partial class Form1 : Form
     public Form1()
     {
         InitializeComponent();
+        Clipboard.SetDataAsJson("point", new Point(1, 1));
+        Clipboard.TryGetData("point", out Point testie); 
+        //var test = Clipboard.GetData("point");
     }
 }
